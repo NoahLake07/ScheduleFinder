@@ -13,4 +13,12 @@ public class ConsoleColors {
 
     public static final String RESET = "\033[0m";  // Text Reset
 
+    public static void setPrinterColor(String consoleColor){
+        System.out.print(consoleColor);
+    }
+
+    public static void resetPrinter(){
+        System.out.print(RESET);
+    }
+
 }
