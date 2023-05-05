@@ -21,4 +21,11 @@ public class Person {
         return schedule;
     }
 
+    public boolean equals(String object){
+        if(object.equals(this.name)){
+            return true;
+        }
+        return false;
+    }
+
 }

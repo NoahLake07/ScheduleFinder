@@ -42,6 +42,12 @@ public class Schedule {
         }
     }
 
+    public void setAllNightsAvailable(){
+        for (int i = 0; i <= 6; i++) {
+            this.week[i].setNighttimeAvailable();
+        }
+    }
+
     public void addUnavailableDay(int DD, int MM, int YYYY){
         unavailableDays.add(new Day(DD,MM,YYYY));
     }

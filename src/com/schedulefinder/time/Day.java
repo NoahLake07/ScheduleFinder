@@ -74,6 +74,14 @@ public class Day {
             }
         }
     }
+    public void setNighttimeAvailable(){
+        // nighttime is considered 9pm-5am
+        for (int i = 0; i < 24; i++) {
+            if(i<=5 || i>=21 ) {
+                hours[i].setAvailable(true);
+            }
+        }
+    }
 
     public void setUnavailable(){
         for (int i = 0; i < 24; i++) {
