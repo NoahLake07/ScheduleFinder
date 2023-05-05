@@ -115,6 +115,8 @@ public class ScheduleFinder {
             }
         }
 
+        // TODO add additional unavailable dates setup
+
         print("\nFINISHED SETTING UP PERSON \"" + name + "\"... ");
 
         // add the person to the list
@@ -161,6 +163,7 @@ public class ScheduleFinder {
                 setPrinterColor(ConsoleColors.PURPLE);
                 println("\t(a) Erase current schedule and setup a new one \n\t(b) Add new time parameters\t(c) Delete");
                 resetPrinter();
+                // TODO evaluate choice and perform desired action
             }
 
             case 'C' -> {
