@@ -1,4 +1,5 @@
-import com.schedulefinder.ConsoleColors;
+package com.schedulefinder;
+
 import com.schedulefinder.person.Person;
 import com.schedulefinder.time.Conversion;
 import com.schedulefinder.time.Day;
@@ -6,7 +7,7 @@ import static com.schedulefinder.time.Conversion.time;
 
 public class TestOne {
 
-    Person noah = new Person("Noah");
+    public Person noah = new Person("Noah");
 
     public void setupNoahSchedule(){
         Day sun = new Day();

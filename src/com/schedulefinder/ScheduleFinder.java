@@ -1,10 +1,12 @@
-import com.schedulefinder.ConsoleColors;
+package com.schedulefinder;
+
 import com.schedulefinder.person.Person;
 import org.jetbrains.annotations.Contract;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
 import java.util.ArrayList;
 
 import static com.schedulefinder.ConsoleColors.*;
@@ -22,6 +24,13 @@ public class ScheduleFinder {
         System.out.println("> SCHEDULE FINDER RUNNING");
         println("Please enter command below...");
         resetPrinter();
+
+        boolean addTestPeople = true;
+        if(addTestPeople){
+            TestOne test = new TestOne();
+            test.setupNoahSchedule();
+            people.add(test.noah);
+        }
 
         startReadingInput();
     }
@@ -71,21 +80,24 @@ public class ScheduleFinder {
         while(commandsBeingEntered) {
             String day = getInputFromConsole();
             while (!isValidDay(day) || day.equals("done")) {
+                if(day.equals(CANCEL) || day.equals("done")) {commandsBeingEntered = false; break;}
                 println("The day you entered was not valid. Please enter a valid day using at least the first three letters of the day.");
                 day = getInputFromConsole();
-                if(day.equals(CANCEL)) {commandsBeingEntered = false; break;}
             }
-            if(day.equals("done")) {commandsBeingEntered = false; continue;}
-            if(day.equals(CANCEL)) {commandsBeingEntered = false; continue; }
-            println("EDIT DAY SCHEDULE: \"" + getFullDay(day).toUpperCase() + "\" : Enter unavailable times separated by commas, " +
+            if(day.equals("done") || day.equals(CANCEL)) {commandsBeingEntered = false; continue;}
+
+            println("ADD DAY SCHEDULE: \"" + getFullDay(day).toUpperCase() + "\" : Enter unavailable times separated by commas, " +
                     "with the start and end time\nwritten in military time (0hrs-23hrs) separated by a hyphen.\nIf you'd like to set the " +
                     "night hours of the day available or unavailable, use \"?night=true\" or \"?night=false\". Example: 10-14,6-7,?night=false,16-18");
 
             String unavailableTimes = getInputFromConsole();
             String[] unavailableTimeInputs = unavailableTimes.split(",");
+            // * TEMP print split array of times
+            println(unavailableTimeInputs.toString());
+
             int i = 0;
             boolean error = false;
-            while (i < unavailableTimeInputs.length || error == true) {
+            while (i < unavailableTimeInputs.length && !error && commandsBeingEntered) {
                 String cmdInput = unavailableTimeInputs[i];
                 if (cmdInput.contains("-")) {
                     // command segment is an unavailable time
@@ -105,13 +117,13 @@ public class ScheduleFinder {
                     }
                 } else if (cmdInput.contains("done")) {
                     commandsBeingEntered = false;
-                    error = true;
                     break;
                 } else {
                     error = true;
                     println("ERROR: Commands have been inputted incorrectly. Please try again...");
                     break;
                 }
+                i++;
             }
         }
 
@@ -120,29 +132,52 @@ public class ScheduleFinder {
         print("\nFINISHED SETTING UP PERSON \"" + name + "\"... ");
 
         // add the person to the list
-        people.add(new Person(name));
+        people.add(newPerson);
         print("Successfully added new person to directory.\n");
+    }
+
+    private void viewPerson(){
+        println("VIEW PERSON: Please enter the index of the person you'd like to view.");
+        setPrinterColor(PURPLE);
+        int i = 0;
+        for (Person p : people){
+            println("\t[" +i+ "] : " + p.getName());
+        }
+        resetPrinter();
+
+        String index = getInputFromConsole();
+        while(Integer.valueOf(index)>=people.size()){
+            println("ERROR: That was not a valid index. Try again...");
+            index = getInputFromConsole();
+        }
+
+        people.get(Integer.valueOf(index)).printSchedule();
+        resetPrinter();
+
+        println("Task completed successfully.\n");
     }
 
     private void editPerson(){
         resetPrinter();
-        println("EDIT PERSON: Please enter full name of person to edit.");
+        println("EDIT PERSON: Please enter the index of the person you'd like to edit.");
+        setPrinterColor(PURPLE);
+        int i = 0;
+        for (Person p : people){
+            println("\t[" +i+ "] : " + p.getName());
+        }
+        resetPrinter();
 
-        String name = getInputFromConsole();
-        while(listContains(people,name)) {
-            println("ERROR: PERSON NOT FOUND. PLEASE ENTER THE EXACT NAME OF THE PERSON YOU WANT TO EDIT.");
-            name = getInputFromConsole();
-            println("Searching directory...");
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+        String index = getInputFromConsole();
+        while(Integer.valueOf(index)>=people.size()){
+            println("ERROR: That was not a valid index. Try again...");
+            index = getInputFromConsole();
         }
 
-        println("EDIT PERSON: \"" + name + "\" : Enter the letter corresponding to the action you'd like to perform.");
+        Person person = people.get(Integer.valueOf(index));
+
+        println("EDIT PERSON: \"" + person.getName() + "\" : Enter the letter corresponding to the action you'd like to perform.");
         setPrinterColor(ConsoleColors.PURPLE);
-        println("\t(a) Edit Name\t(b) Edit Schedule\t(c) Delete");
+        println("\t(a) Edit Name\t(b) Edit Schedule\t(c) Delete\t(d) Exit Menu");
         resetPrinter();
 
         String optionInput = getInputFromConsole();
@@ -150,16 +185,17 @@ public class ScheduleFinder {
             println("ERROR: LETTER ENTERED WAS NOT ACCEPTED. Try again...");
             optionInput = getInputFromConsole();
         }
+
         char option = optionInput.toUpperCase().charAt(0);
         switch (option){
             case 'A' -> {
-                println("EDIT NAME \"" + name + "\" : Enter new name...");
+                println("EDIT NAME \"" + person.getName() + "\" : Enter new name...");
                 String newName = getInputFromConsole();
                 // TODO override old name using the index of the person in the directory
             }
 
             case 'B' -> {
-                println("EDIT SCHEDULE \"" + name + "\" : Enter one of the options from below...");
+                println("EDIT SCHEDULE \"" + person.getName() + "\" : Enter one of the options from below...");
                 setPrinterColor(ConsoleColors.PURPLE);
                 println("\t(a) Erase current schedule and setup a new one \n\t(b) Add new time parameters\t(c) Delete");
                 resetPrinter();
@@ -225,8 +261,8 @@ public class ScheduleFinder {
     }
 
     public static boolean listContains(ArrayList<Person> list, String keyName){
-        for(Person element : list){
-            if(element.getName().equals(keyName)) return true;
+        for(Person person : list){
+            if(person.getName().equals(keyName) || person.getName().contains(keyName)) return true;
         }
         return false;
     }
@@ -241,8 +277,9 @@ public class ScheduleFinder {
 
             case "/help" -> help();
 
-
             case "/editperson" -> editPerson();
+
+            case "/viewperson" -> viewPerson();
 
 
             case "/addperson" -> addPerson();

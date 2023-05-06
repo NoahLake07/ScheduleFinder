@@ -14,7 +14,7 @@ public class Schedule {
 
     public Schedule(){
         // init weekly schedule with all nights marked unavailable
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 7; i++) {
             week[i] = new Day();
             week[i].setNighttimeUnavailable();
         }

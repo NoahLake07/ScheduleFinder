@@ -1,1 +1,1 @@
-# ScheduleFinder
+# com.schedulefinder.ScheduleFinder
