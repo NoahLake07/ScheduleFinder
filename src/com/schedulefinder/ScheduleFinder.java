@@ -1,6 +1,7 @@
 package com.schedulefinder;
 
 import com.schedulefinder.person.Person;
+import com.schedulefinder.schedule.Schedule;
 import org.jetbrains.annotations.Contract;
 
 import java.io.BufferedReader;
@@ -92,8 +93,6 @@ public class ScheduleFinder {
 
             String unavailableTimes = getInputFromConsole();
             String[] unavailableTimeInputs = unavailableTimes.split(",");
-            // * TEMP print split array of times
-            println(unavailableTimeInputs.toString());
 
             int i = 0;
             boolean error = false;
@@ -127,12 +126,39 @@ public class ScheduleFinder {
             }
         }
 
-        // TODO add additional unavailable dates setup
+        println("COMPLETED WEEKLY SCHEDULE SETUP. Now enter additional unavailable days.");
+        setPrinterColor(PURPLE);
+        println("\tPlease input additional unavailable days separated by commas, with the formatting of the dates being MM/DD/YYYY");
 
+        boolean dateError = false;
+        do {
+            String additionalDatesInput = getInputFromConsole();
+            if(additionalDatesInput.equals("done")){
+                break;
+            }
+            String[] individualDateInput = additionalDatesInput.split(",");
+            for (String da : individualDateInput){
+                String[] ddmmyyyy = da.split("/");
+                if(ddmmyyyy.length != 3) {
+                    println("ERROR: You did not input a valid date formatted in DD/MM/YYYY separated by commas. Please try again...");
+                    dateError = true;
+                    break;
+                } else {
+                    newPerson.getSchedule().addUnavailableDay(Integer.valueOf(ddmmyyyy[0]), Integer.valueOf(ddmmyyyy[1]), Integer.valueOf(ddmmyyyy[2]));
+                }
+            }
+        } while (dateError);
+
+        resetPrinter();
         print("\nFINISHED SETTING UP PERSON \"" + name + "\"... ");
 
         // add the person to the list
         people.add(newPerson);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         print("Successfully added new person to directory.\n");
     }
 
@@ -141,7 +167,7 @@ public class ScheduleFinder {
         setPrinterColor(PURPLE);
         int i = 0;
         for (Person p : people){
-            println("\t[" +i+ "] : " + p.getName());
+            println("\t[" + i++ + "] : " + p.getName());
         }
         resetPrinter();
 
@@ -173,7 +199,8 @@ public class ScheduleFinder {
             index = getInputFromConsole();
         }
 
-        Person person = people.get(Integer.valueOf(index));
+        int indexOfEdit = Integer.valueOf(index);
+        Person person = people.get(indexOfEdit);
 
         println("EDIT PERSON: \"" + person.getName() + "\" : Enter the letter corresponding to the action you'd like to perform.");
         setPrinterColor(ConsoleColors.PURPLE);
@@ -181,29 +208,232 @@ public class ScheduleFinder {
         resetPrinter();
 
         String optionInput = getInputFromConsole();
-        while(!optionInput.toUpperCase().equals("A")||!optionInput.toUpperCase().equals("B")||!optionInput.toUpperCase().equals("C")){
+        while(!optionInput.toUpperCase().equals("A")&&!optionInput.toUpperCase().equals("B")&&!optionInput.toUpperCase().equals("C")){
             println("ERROR: LETTER ENTERED WAS NOT ACCEPTED. Try again...");
             optionInput = getInputFromConsole();
         }
 
         char option = optionInput.toUpperCase().charAt(0);
         switch (option){
+            // new name
             case 'A' -> {
                 println("EDIT NAME \"" + person.getName() + "\" : Enter new name...");
                 String newName = getInputFromConsole();
-                // TODO override old name using the index of the person in the directory
+                people.get(indexOfEdit).setName(newName);
+                println("Successfully changed name of person to \"" + newName + ".\"");
             }
 
+            // edit schedule
             case 'B' -> {
                 println("EDIT SCHEDULE \"" + person.getName() + "\" : Enter one of the options from below...");
                 setPrinterColor(ConsoleColors.PURPLE);
-                println("\t(a) Erase current schedule and setup a new one \n\t(b) Add new time parameters\t(c) Delete");
+                println("\t(a) Erase current schedule and setup a new one \n\t(b) Add new week time parameters\t(c) Erase additional unavailable dates and add new ones");
                 resetPrinter();
-                // TODO evaluate choice and perform desired action
+
+                String subchoice = getInputFromConsole();
+                while(!(subchoice.toLowerCase().equals("a") || subchoice.toLowerCase().equals("b") || subchoice.toLowerCase().equals("c"))){
+                    System.out.println("ERROR: That was not a valid choice. Try again...");
+                    subchoice = getInputFromConsole();
+                }
+
+                char choice = subchoice.toUpperCase().charAt(0);
+                switch (choice){
+                    // erase current schedule and enter a new one
+                    case 'A' -> {
+                        Schedule newSchedule = new Schedule();
+                        println("\tEnter each day of the week using the first three letters of the day you are entering. (For example, \"mon\").\n\tYou will then be directed to a submenu to fill out the details of that day. When finished, enter \"done\".");
+                        setPrinterColor(RESET);
+
+                        boolean commandsBeingEntered = true;
+                        while(commandsBeingEntered) {
+                            String day = getInputFromConsole();
+                            while (!isValidDay(day) || day.equals("done")) {
+                                if(day.equals(CANCEL) || day.equals("done")) {commandsBeingEntered = false; break;}
+                                println("The day you entered was not valid. Please enter a valid day using at least the first three letters of the day.");
+                                day = getInputFromConsole();
+                            }
+                            if(day.equals("done") || day.equals(CANCEL)) {commandsBeingEntered = false; continue;}
+
+                            println("ADD DAY SCHEDULE: \"" + getFullDay(day).toUpperCase() + "\" : Enter unavailable times separated by commas, " +
+                                    "with the start and end time\nwritten in military time (0hrs-23hrs) separated by a hyphen.\nIf you'd like to set the " +
+                                    "night hours of the day available or unavailable, use \"?night=true\" or \"?night=false\". Example: 10-14,6-7,?night=false,16-18");
+
+                            String unavailableTimes = getInputFromConsole();
+                            String[] unavailableTimeInputs = unavailableTimes.split(",");
+
+                            int j = 0;
+                            boolean error = false;
+                            while (j < unavailableTimeInputs.length && !error && commandsBeingEntered) {
+                                String cmdInput = unavailableTimeInputs[j];
+                                if (cmdInput.contains("-")) {
+                                    // command segment is an unavailable time
+                                    String startTime = cmdInput.split("-")[0];
+                                    String endTime = cmdInput.split("-")[1];
+                                    newSchedule
+                                            .getWeeklySchedule()[getDayIndex(day)]
+                                            .writeUnavailableTimes(Integer.valueOf(startTime),Integer.valueOf(endTime));
+                                } else if (cmdInput.contains("?")) {
+                                    // command segment is a data operator
+                                    if (cmdInput.contains("night")) {
+                                        if (cmdInput.contains("true")) {
+                                            newSchedule.setAllNightsAvailable();
+                                        } else {
+                                            newSchedule.setAllNightsUnavailable();
+                                        }
+                                    }
+                                } else if (cmdInput.contains("done")) {
+                                    commandsBeingEntered = false;
+                                    break;
+                                } else {
+                                    error = true;
+                                    println("ERROR: Commands have been inputted incorrectly. Please try again...");
+                                    break;
+                                }
+                                j++;
+                            }
+                        }
+
+                        println("COMPLETED WEEKLY SCHEDULE SETUP. Now enter additional unavailable days.");
+                        setPrinterColor(PURPLE);
+                        println("\tPlease input additional unavailable days separated by commas, with the formatting of the dates being MM/DD/YYYY");
+
+                        boolean dateError = false;
+                        do {
+                            String additionalDatesInput = getInputFromConsole();
+                            if(additionalDatesInput.equals("done")){
+                                break;
+                            }
+                            String[] individualDateInput = additionalDatesInput.split(",");
+                            for (String da : individualDateInput){
+                                String[] ddmmyyyy = da.split("/");
+                                if(ddmmyyyy.length != 3) {
+                                    println("ERROR: You did not input a valid date formatted in DD/MM/YYYY separated by commas. Please try again...");
+                                    dateError = true;
+                                    break;
+                                } else {
+                                    newSchedule.addUnavailableDay(Integer.valueOf(ddmmyyyy[0]), Integer.valueOf(ddmmyyyy[1]), Integer.valueOf(ddmmyyyy[2]));
+                                }
+                            }
+                        } while (dateError);
+
+                        resetPrinter();
+                        print("\nFINISHED SCHEDULE SET-UP...");
+
+                        // override the new schedule over the old one (replacing the old one)
+                        people.get(indexOfEdit).setSchedule(newSchedule);
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        print("Successfully edited schedule and wrote to directory.\n");
+                    }
+
+                    // add new week time parameters
+                    case 'B' -> {
+
+                        boolean commandsBeingEntered = true;
+                        while(commandsBeingEntered){
+                            String day = getInputFromConsole();
+                            while (!isValidDay(day) || day.equals("done")) {
+                                if(day.equals(CANCEL) || day.equals("done")) {commandsBeingEntered = false; break;}
+                                println("The day you entered was not valid. Please enter a valid day using at least the first three letters of the day.");
+                                day = getInputFromConsole();
+                            }
+                            if(day.equals("done") || day.equals(CANCEL)) {commandsBeingEntered = false; continue;}
+
+                            println("ADD DAY SCHEDULE: \"" + getFullDay(day).toUpperCase() + "\" : Enter unavailable times separated by commas, " +
+                                    "with the start and end time\nwritten in military time (0hrs-23hrs) separated by a hyphen.\nIf you'd like to set the " +
+                                    "night hours of the day available or unavailable, use \"?night=true\" or \"?night=false\". Example: 10-14,6-7,?night=false,16-18");
+
+                            String unavailableTimes = getInputFromConsole();
+                            String[] unavailableTimeInputs = unavailableTimes.split(",");
+
+                            int j = 0;
+                            boolean error = false;
+                            while (j < unavailableTimeInputs.length && !error && commandsBeingEntered) {
+                                String cmdInput = unavailableTimeInputs[j];
+                                if (cmdInput.contains("-")) {
+                                    // command segment is an unavailable time
+                                    String startTime = cmdInput.split("-")[0];
+                                    String endTime = cmdInput.split("-")[1];
+                                    people.get(indexOfEdit).getSchedule()
+                                            .getWeeklySchedule()[getDayIndex(day)]
+                                            .writeUnavailableTimes(Integer.valueOf(startTime),Integer.valueOf(endTime));
+                                } else if (cmdInput.contains("?")) {
+                                    // command segment is a data operator
+                                    if (cmdInput.contains("night")) {
+                                        if (cmdInput.contains("true")) {
+                                            people.get(indexOfEdit).getSchedule().setAllNightsAvailable();
+                                        } else {
+                                            people.get(indexOfEdit).getSchedule().setAllNightsUnavailable();
+                                        }
+                                    }
+                                } else if (cmdInput.contains("done")) {
+                                    commandsBeingEntered = false;
+                                    break;
+                                } else {
+                                    error = true;
+                                    println("ERROR: Commands have been inputted incorrectly. Please try again...");
+                                    break;
+                                }
+                                j++;
+                            }
+                        }
+
+                    }
+
+                    case 'C' -> {
+                        // erase additional unavailable dates and add new ones
+                        people.get(indexOfEdit).getSchedule().getUnavailableDays().clear();
+                        setPrinterColor(PURPLE);
+                        println("\tPlease input additional unavailable days separated by commas, with the formatting of the dates being MM/DD/YYYY");
+
+                        boolean dateError = false;
+                        do {
+                            String additionalDatesInput = getInputFromConsole();
+                            if(additionalDatesInput.equals("done")){
+                                break;
+                            }
+                            String[] individualDateInput = additionalDatesInput.split(",");
+                            for (String da : individualDateInput){
+                                String[] ddmmyyyy = da.split("/");
+                                if(ddmmyyyy.length != 3) {
+                                    println("ERROR: You did not input a valid date formatted in DD/MM/YYYY separated by commas. Please try again...");
+                                    dateError = true;
+                                    break;
+                                } else {
+                                    people.get(indexOfEdit).getSchedule().addUnavailableDay(Integer.valueOf(ddmmyyyy[0]), Integer.valueOf(ddmmyyyy[1]), Integer.valueOf(ddmmyyyy[2]));
+                                }
+                            }
+                        } while (dateError);
+
+                        resetPrinter();
+                    }
+                }
+
             }
 
             case 'C' -> {
+                setPrinterColor(YELLOW);
+                println("ARE YOU SURE YOU WANT TO DELETE THIS PERSON? THIS ACTION CANNOT BE UNDONE.\nEnter \"confirm\" to continue, or \"cancel\" to cancel the operation.");
+                resetPrinter();
 
+                String subchoice = getInputFromConsole();
+                while(!(subchoice.toLowerCase().equals("confirm") || subchoice.toLowerCase().equals("cancel"))){
+                    System.out.println("ERROR: That was not a valid choice. Try again...");
+                    subchoice = getInputFromConsole();
+                }
+
+                if(subchoice.toLowerCase().equals("confirm")){
+                    // delete the person being edited
+                    println("\tDELETING PERSON...");
+                    people.remove(indexOfEdit);
+                    println("\tTask completed successfully.");
+                } else {
+                    // cancel and continue
+                    println("DELETE OPERATION CANCELED.");
+                }
             }
         }
     }
@@ -211,7 +441,7 @@ public class ScheduleFinder {
     private void quit(){
         setPrinterColor(ConsoleColors.WHITE);
         println("STOPPING PROCESS");
-        System.exit(1);
+        System.exit(0);
     }
 
     // endregion

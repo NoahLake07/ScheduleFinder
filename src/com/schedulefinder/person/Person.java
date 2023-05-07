@@ -21,8 +21,14 @@ public class Person {
         return name;
     }
 
+    public void setName(String newName) {this.name = newName;}
+
     public Schedule getSchedule(){
         return schedule;
+    }
+
+    public void setSchedule(Schedule newSchedule){
+        this.schedule = newSchedule;
     }
 
     public boolean equals(String object){
@@ -56,6 +62,7 @@ public class Person {
             }
             ScheduleFinder.println("");
         }
+        ScheduleFinder.println("ADDITIONAL UNAVAILABLE DAYS:\t"+this.getSchedule().getUnavailableDays());
         ScheduleFinder.println("=====================================");
     }
 

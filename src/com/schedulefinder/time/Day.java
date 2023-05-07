@@ -44,7 +44,6 @@ public class Day {
     public void writeUnavailableTimes(int startHr, int endHr){
         for (int i = startHr; i <= endHr; i++) {
             hours[i-1].setAvailable(false);
-            ScheduleFinder.println("\t> SET HOUR " + i + " TO UNAVAILABLE");
         }
     }
 
