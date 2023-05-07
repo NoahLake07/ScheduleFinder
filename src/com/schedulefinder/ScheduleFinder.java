@@ -62,7 +62,9 @@ public class ScheduleFinder {
         print("\t>\thelp command - /help\n" +
                 "\t>\tadd person - /addperson\n" +
                 "\t>\tedit person - /editperson\n" +
-                "\t>\tview person - /viewperson\n");
+                "\t>\tview person - /viewperson\n" +
+                "\t>\texport directory - /export\n" +
+                "\t>\timport directory - /import\n");
         setPrinterColor(ConsoleColors.RESET);
     }
 
@@ -438,6 +440,14 @@ public class ScheduleFinder {
         }
     }
 
+    private void exportDirectory(){
+
+    }
+
+    private void importDirectory(){
+
+    }
+
     private void quit(){
         setPrinterColor(ConsoleColors.WHITE);
         println("STOPPING PROCESS");
@@ -515,6 +525,10 @@ public class ScheduleFinder {
             case "/addperson" -> addPerson();
 
             case "/quit" -> quit();
+
+            case "/export" -> exportDirectory();
+
+            case "/import" -> importDirectory();
 
             default -> {
                 setPrinterColor(ConsoleColors.RED);
