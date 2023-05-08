@@ -4,9 +4,7 @@ import com.schedulefinder.person.Person;
 import com.schedulefinder.schedule.Schedule;
 import org.jetbrains.annotations.Contract;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 
@@ -25,13 +23,6 @@ public class ScheduleFinder {
         System.out.println("> SCHEDULE FINDER RUNNING");
         println("Please enter command below...");
         resetPrinter();
-
-        boolean addTestPeople = true;
-        if(addTestPeople){
-            TestOne test = new TestOne();
-            test.setupNoahSchedule();
-            people.add(test.noah);
-        }
 
         startReadingInput();
     }
@@ -440,9 +431,30 @@ public class ScheduleFinder {
         }
     }
 
-    private void exportDirectory(){
+    private void exportDirectory() {
+        println("EXPORT DIRECTORY: Please enter a valid filename below.\n");
 
+        boolean keepLooping=true;
+        while (keepLooping) {
+            String exportLoc = getInputFromConsole();
+            File toWrite = new File(exportLoc + "/save.schdir/");
+
+            try {
+                FileOutputStream fileOut =
+                        new FileOutputStream(toWrite);
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(people);
+                out.close();
+                fileOut.close();
+                println("Successfully saved file.");
+            } catch (IOException i) {
+                i.printStackTrace();
+                println("ERROR: Something went wrong during file save. Please try entering a file save location again.");
+                continue;
+            }
+        }
     }
+
 
     private void importDirectory(){
 

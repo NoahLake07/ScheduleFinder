@@ -2,7 +2,9 @@ package com.schedulefinder.time;
 
 import com.schedulefinder.ScheduleFinder;
 
-public class Day {
+import java.io.Serializable;
+
+public class Day implements Serializable {
 
     // * IMPORTANT CLASS INFORMATION
     /*

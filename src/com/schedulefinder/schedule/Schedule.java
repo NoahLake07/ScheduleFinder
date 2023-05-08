@@ -2,9 +2,10 @@ package com.schedulefinder.schedule;
 
 import com.schedulefinder.time.Day;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Schedule {
+public class Schedule implements Serializable {
 
     // weekly schedule
     Day[] week = new Day[7];

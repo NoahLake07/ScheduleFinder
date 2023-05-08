@@ -7,7 +7,9 @@ import com.schedulefinder.time.Conversion;
 import com.schedulefinder.time.Day;
 import com.schedulefinder.ScheduleFinder.*;
 
-public class Person {
+import java.io.Serializable;
+
+public class Person implements Serializable {
 
     private String name;
     private Schedule schedule;

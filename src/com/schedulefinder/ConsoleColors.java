@@ -1,6 +1,8 @@
 package com.schedulefinder;
 
-public class ConsoleColors {
+import java.io.Serializable;
+
+public class ConsoleColors implements Serializable {
 
     public static final String BLACK = "\033[0;30m";   // BLACK
     public static final String RED = "\033[0;31m";     // RED
