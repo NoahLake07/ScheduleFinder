@@ -432,7 +432,7 @@ public class ScheduleFinder {
     }
 
     private void exportDirectory() {
-        println("EXPORT DIRECTORY: Please enter a valid filename below.\n");
+        println("EXPORT DIRECTORY: Please enter a valid directory pathname below.\n");
 
         boolean keepLooping=true;
         while (keepLooping) {
@@ -447,6 +447,7 @@ public class ScheduleFinder {
                 out.close();
                 fileOut.close();
                 println("Successfully saved file.");
+                keepLooping = false;
             } catch (IOException i) {
                 i.printStackTrace();
                 println("ERROR: Something went wrong during file save. Please try entering a file save location again.");
@@ -457,7 +458,44 @@ public class ScheduleFinder {
 
 
     private void importDirectory(){
+        println("IMPORT DIRECTORY: Please enter a valid filename to load from below.\n");
 
+        boolean keepLooping=true;
+        while (keepLooping) {
+            String exportLoc = getInputFromConsole();
+
+            try {
+                FileInputStream fileIn = new FileInputStream(exportLoc);
+                ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+                ArrayList<Person> readObject = (ArrayList<Person>) objectIn.readObject();
+                objectIn.close();
+                keepLooping = false;
+
+                println("File directory loaded with a total of " + readObject.size() + " assets. \nWould you like to overwrite the current directory with this one?");
+                setPrinterColor(PURPLE);
+                println("\tPlease enter \"yes\" or \"no\".");
+                resetPrinter();
+
+                String confirmation = getInputFromConsole();
+                while(!(confirmation.toLowerCase().equals("yes")||confirmation.toLowerCase().equals("no"))){
+                    println("ERROR: That was not a valid response. Please try again...");
+                    confirmation = getInputFromConsole();
+                }
+
+                if(confirmation.toLowerCase().equals("yes")){
+                    people = readObject;
+                } else {
+                    println("\t> CANCELLED OPERATION. Returned to home.");
+                }
+            } catch (IOException i) {
+                i.printStackTrace();
+                println("ERROR: Something went wrong during file load. Please try entering a valid file location again.");
+                continue;
+            } catch (ClassNotFoundException e) {
+                println("ERROR: There was in internal issue during load. Runtime Exception will be thrown.");
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private void quit(){
