@@ -55,7 +55,8 @@ public class ScheduleFinder {
                 "\t>\tedit person - /editperson\n" +
                 "\t>\tview person - /viewperson\n" +
                 "\t>\texport directory - /export\n" +
-                "\t>\timport directory - /import\n");
+                "\t>\timport directory - /import\n" +
+                "\t>\tfind available times - /findtimes\n");
         setPrinterColor(ConsoleColors.RESET);
     }
 
@@ -67,7 +68,8 @@ public class ScheduleFinder {
         Person newPerson = new Person(name);
         println("NEW USER: \"" + name + "\" : Please write the weekly schedule. Formatting is shown below.");
         setPrinterColor(ConsoleColors.PURPLE);
-        println("\tEnter each day of the week using the first three letters of the day you are entering. (For example, \"mon\").\n\tYou will then be directed to a submenu to fill out the details of that day. When finished, enter \"done\".");
+        println("\tEnter each day of the week using the first three letters of the day you are entering. (For example, \"mon\")." +
+                "\n\tYou will then be directed to a submenu to fill out the details of that day. When finished, enter \"done\".");
         setPrinterColor(RESET);
 
         boolean commandsBeingEntered = true;
@@ -477,7 +479,7 @@ public class ScheduleFinder {
                 resetPrinter();
 
                 String confirmation = getInputFromConsole();
-                while(!(confirmation.toLowerCase().equals("yes")||confirmation.toLowerCase().equals("no"))){
+                while(!(confirmation.toLowerCase().equals("yes") || confirmation.toLowerCase().equals("no"))){
                     println("ERROR: That was not a valid response. Please try again...");
                     confirmation = getInputFromConsole();
                 }
@@ -502,6 +504,28 @@ public class ScheduleFinder {
         setPrinterColor(ConsoleColors.WHITE);
         println("STOPPING PROCESS");
         System.exit(0);
+    }
+
+    private void findSchedules(){
+        println("FIND SCHEDULES: Please enter time constraints for the search.");
+        println("\t First specify the year to look in, add a colon, specify the month range by using numbers 1-12 separated by a hyphen. Months will be inclusive\n" +
+                "Here's an example...\t2023:5-8");
+
+        String timeConstraintInput = getInputFromConsole();
+        while(!timeConstraintInput.contains(":")||!timeConstraintInput.contains("-")){
+            println("ERROR: That wasn't a valid input. Make sure that you include a colon and a hyphen to mark when the search should start and end.");
+        }
+
+        String[] inputs = timeConstraintInput.split(":");
+        String[] monthRange = inputs[1].split("-");
+        int yearToSearch = Integer.valueOf(inputs[0]);
+        int startMonth = Integer.valueOf(monthRange[0]);
+        int endMonth = Integer.valueOf(monthRange[0]);
+
+        for (int month = startMonth; month <= endMonth; month++) {
+
+        }
+
     }
 
     // endregion
@@ -579,6 +603,8 @@ public class ScheduleFinder {
             case "/export" -> exportDirectory();
 
             case "/import" -> importDirectory();
+
+            case "/findtimes" -> findSchedules();
 
             default -> {
                 setPrinterColor(ConsoleColors.RED);

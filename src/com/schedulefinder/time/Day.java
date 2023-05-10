@@ -102,7 +102,7 @@ public class Day implements Serializable {
     }
 
     /**
-     * @param HH A valid hour from 1-24
+     * @param HH A valid hour from 0-23
      * @return if the hour given is available
      */
     public boolean isHourAvailable(int HH){
@@ -127,6 +127,31 @@ public class Day implements Serializable {
         }
 
         return hoursFound > hoursNeeded;
+    }
+
+    /**
+     * @param day
+     * @return 1 if the object being compared to is greater than, -1 if less than, and 0 if equal to
+     */
+    public int compareTo(Day day){
+        if(day.year == this.year && day.month == this.month && day.day == this.day){
+            return 0;
+        }
+
+        if(day.year == this.year && this.month == day.month && day.day > this.day){
+            return 1;
+        }
+
+        if(day.year < this.year){
+            return 1;
+        }
+
+        if(day.year == this.year && this.month < day.month){
+            return 1;
+        } else {
+            return -1;
+        }
+
     }
 
 }

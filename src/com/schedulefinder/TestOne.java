@@ -1,6 +1,7 @@
 package com.schedulefinder;
 
 import com.schedulefinder.person.Person;
+import com.schedulefinder.schedule.ScheduleCheck;
 import com.schedulefinder.time.Conversion;
 import com.schedulefinder.time.Day;
 import static com.schedulefinder.time.Conversion.time;
@@ -75,5 +76,7 @@ public class TestOne {
         x.setupNoahSchedule();
         x.printNoahSchedule(x.noah);
         System.out.println("ADDITIONAL UNAVAILABLE DAYS:\t"+x.noah.getSchedule().getUnavailableDays());
+
+        System.out.println(ScheduleCheck.getDayOfWeek(5,9,2023));
     }
 }

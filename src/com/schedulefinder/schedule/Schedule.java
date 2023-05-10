@@ -49,6 +49,16 @@ public class Schedule implements Serializable {
         }
     }
 
+    public boolean isAvailable(int day, int mo, int yr){
+        Day checkingDay = new Day(day,mo,yr);
+        for (int i = 0; i < unavailableDays.size()-1; i++) {
+            if(unavailableDays.get(i).compareTo(checkingDay) == 0){
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void addUnavailableDay(int DD, int MM, int YYYY){
         unavailableDays.add(new Day(DD,MM,YYYY));
     }
