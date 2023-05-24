@@ -2,8 +2,10 @@ package com.schedulefinder;
 
 import com.schedulefinder.person.Person;
 import com.schedulefinder.schedule.Schedule;
+import com.virtualconsole.app.VConsole;
 import org.jetbrains.annotations.Contract;
 
+import java.awt.*;
 import java.io.*;
 import java.net.Inet4Address;
 import java.util.ArrayList;
@@ -14,32 +16,37 @@ public class ScheduleFinder {
 
     ArrayList<Person> people = new ArrayList<>();
     private boolean run = true;
+    public static final boolean doVirtualConsole = true;
     public static final String CANCEL = "escape";
+    private static VConsole console;
+    public static final Color DEFAULT_COLOR = new Color(215, 215, 215);
+    public static final Color USER_INPUT_COLOR = new Color(6, 159, 0);
+    private static Color currentColor = new Color(0,0,0);
 
     // region Startup Methods
 
     public void start(){
-        setPrinterColor(ConsoleColors.CYAN);
-        System.out.println("> SCHEDULE FINDER RUNNING");
-        println("Please enter command below...");
-        resetPrinter();
+
+        if(doVirtualConsole){
+            console = new VConsole();
+            resetPrinter();
+            console.setColorMode(VConsole.DARK);
+            console.getInputBar().setForeground(USER_INPUT_COLOR);
+            console.setSize(1000,600);
+            console.resize();
+        } else {
+            setPrinterColor(ConsoleColors.CYAN);
+            System.out.println("> SCHEDULE FINDER RUNNING");
+            println("Please enter command below...");
+            resetPrinter();
+        }
 
         startReadingInput();
     }
 
     private void startReadingInput(){
         while(run) {
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(System.in));
-
-            // Reading data using readLine
-            String input = null;
-            try {
-                input = reader.readLine();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            read(input);
+            read(getInputFromConsole());
         }
     }
 
@@ -49,7 +56,7 @@ public class ScheduleFinder {
 
     private void help(){
         setPrinterColor(ConsoleColors.PURPLE);
-        print("\tCOMMAND GUIDE\n");
+        print("\n\tCOMMAND GUIDE\n");
         print("\t>\thelp command - /help\n" +
                 "\t>\tadd person - /addperson\n" +
                 "\t>\tedit person - /editperson\n" +
@@ -172,7 +179,7 @@ public class ScheduleFinder {
             index = getInputFromConsole();
         }
 
-        people.get(Integer.valueOf(index)).printSchedule();
+        people.get(Integer.valueOf(index)).printSchedule(console,this);
         resetPrinter();
 
         println("Task completed successfully.\n");
@@ -595,7 +602,6 @@ public class ScheduleFinder {
 
             case "/viewperson" -> viewPerson();
 
-
             case "/addperson" -> addPerson();
 
             case "/quit" -> quit();
@@ -615,25 +621,67 @@ public class ScheduleFinder {
     }
 
     private String getInputFromConsole(){
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(System.in));
+        if(doVirtualConsole){
+            String temp = console.getInputFromConsole();
+            console.println(temp,USER_INPUT_COLOR);
+            return temp;
+        } else {
 
-        // Reading data using readLine
-        String input = null;
-        try {
-            input = reader.readLine();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(System.in));
+
+            // Reading data using readLine
+            String input = null;
+            try {
+                input = reader.readLine();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return input;
         }
-        return input;
     }
 
     public static void print(String s){
-        System.out.print(s);
+        if(doVirtualConsole){
+            console.print(s,currentColor);
+        }else {
+            System.out.print(s);
+        }
     }
 
     public static void println(String s){
-        System.out.println(s);
+        if(doVirtualConsole){
+            console.println(s,currentColor);
+            console.scrollToBottom();
+        }else {
+            System.out.println(s);
+        }
+    }
+
+    public static void setPrinterColor(String colorCode){
+        if(doVirtualConsole){
+            switch (colorCode){
+                case BLACK -> currentColor = Color.BLACK;
+                case RED -> currentColor = Color.RED;
+                case GREEN -> currentColor = Color.GREEN;
+                case YELLOW -> currentColor = Color.YELLOW;
+                case BLUE -> currentColor = Color.BLUE;
+                case PURPLE -> currentColor = new Color(165, 0, 255);
+                case CYAN -> currentColor = Color.CYAN;
+                case WHITE -> currentColor = Color.WHITE;
+                case RESET -> currentColor = DEFAULT_COLOR;
+            }
+        } else {
+            ConsoleColors.setPrinterColor(colorCode);
+        }
+    }
+
+    public static void resetPrinter(){
+        if(doVirtualConsole){
+            currentColor = DEFAULT_COLOR;
+        } else {
+            ConsoleColors.resetPrinter();
+        }
     }
 
     //endregion
